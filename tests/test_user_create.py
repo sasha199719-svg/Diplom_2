@@ -1,9 +1,10 @@
 import allure
 import pytest
-import requests
 
-from data import BASE_URL, REGISTER_ENDPOINT
-from helpers import generate_user_data
+from helpers import (
+    create_user,
+    generate_user_data
+)
 
 
 class TestUserCreate:
@@ -12,10 +13,7 @@ class TestUserCreate:
     def test_create_unique_user(self):
         user_data = generate_user_data()
 
-        response = requests.post(
-            BASE_URL + REGISTER_ENDPOINT,
-            json=user_data
-        )
+        response = create_user(user_data)
 
         assert response.status_code == 200
         assert response.json()["success"] is True
@@ -25,15 +23,8 @@ class TestUserCreate:
     def test_create_existing_user(self):
         user_data = generate_user_data()
 
-        requests.post(
-            BASE_URL + REGISTER_ENDPOINT,
-            json=user_data
-        )
-
-        response = requests.post(
-            BASE_URL + REGISTER_ENDPOINT,
-            json=user_data
-        )
+        create_user(user_data)
+        response = create_user(user_data)
 
         assert response.status_code == 403
         assert response.json()["message"] == "User already exists"
@@ -51,10 +42,7 @@ class TestUserCreate:
         user_data = generate_user_data()
         del user_data[missing_field]
 
-        response = requests.post(
-            BASE_URL + REGISTER_ENDPOINT,
-            json=user_data
-        )
+        response = create_user(user_data)
 
         assert response.status_code == 403
         assert response.json()["message"] == (

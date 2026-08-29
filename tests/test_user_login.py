@@ -1,23 +1,14 @@
 import allure
 import pytest
-import requests
 
-from data import BASE_URL, LOGIN_ENDPOINT
+from helpers import login_user
 
 
 class TestUserLogin:
 
     @allure.title("Успешный логин существующего пользователя")
     def test_login_existing_user(self, user):
-        payload = {
-            "email": user["email"],
-            "password": user["password"]
-        }
-
-        response = requests.post(
-            BASE_URL + LOGIN_ENDPOINT,
-            json=payload
-        )
+        response = login_user(user)
 
         assert response.status_code == 200
         assert response.json()["success"] is True
@@ -31,16 +22,12 @@ class TestUserLogin:
     )
     @allure.title("Нельзя войти с неверным логином и паролем")
     def test_login_with_invalid_credentials(self, email, password):
-        payload = {
+        response = login_user({
             "email": email,
             "password": password
-        }
-
-        response = requests.post(
-            BASE_URL + LOGIN_ENDPOINT,
-            json=payload
-        )
+        })
 
         assert response.status_code == 401
-        assert response.json()["message"] == \
-               "email or password are incorrect"
+        assert response.json()["message"] == (
+            "email or password are incorrect"
+        )
